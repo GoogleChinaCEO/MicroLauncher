@@ -159,12 +159,17 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 }
             };
             unregisterObserver();
-            getContentResolver().registerContentObserver(CallLog.Calls.CONTENT_URI,
-                    true, mMissedPhoneContentObserver);
-            getContentResolver().registerContentObserver(Uri.parse("content://sms"),
-                    true, mMissedMsgContentObserver);
-            getContentResolver().registerContentObserver(Telephony.MmsSms.CONTENT_URI,
-                    true, mMissedMsgContentObserver);
+            try {
+                getContentResolver().registerContentObserver(CallLog.Calls.CONTENT_URI,
+                        true, mMissedPhoneContentObserver);
+                getContentResolver().registerContentObserver(Uri.parse("content://sms"),
+                        true, mMissedMsgContentObserver);
+                getContentResolver().registerContentObserver(Telephony.MmsSms.CONTENT_URI,
+                        true, mMissedMsgContentObserver);
+            } catch (SecurityException e) {
+                Log.e(TAG, "maybe this device doesn't have SMS ContentProvider! ignore...");
+                unregisterObserver();
+            }
         }
     }
 
