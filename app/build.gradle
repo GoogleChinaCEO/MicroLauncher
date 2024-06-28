@@ -6,14 +6,14 @@ plugins {
 
 android {
     android.defaultConfig.vectorDrawables.useSupportLibrary = true
-    compileSdk 32
+    compileSdk 33
 
     def buildSerial = new SimpleDateFormat("MMddHHmm").format(new Date())
 
     defaultConfig {
         applicationId "org.exthmui.microlauncher.duoqin"
         minSdkVersion 26
-        targetSdkVersion 32
+        targetSdkVersion 33
         versionCode 40000
         versionName "1.3.0-${buildSerial}"
         flavorDimensions "channel"
@@ -64,10 +64,10 @@ dependencies {
     configurations {
         all*.exclude group: 'androidx.lifecycle', module: 'lifecycle-viewmodel-ktx'
     }
-    implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'com.google.android.material:material:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'org.jetbrains:annotations:23.0.0'
+    implementation 'org.jetbrains:annotations:24.1.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.preference:preference:1.2.0'
     implementation 'pub.devrel:easypermissions:3.0.0'
@@ -76,7 +76,7 @@ dependencies {
     implementation 'io.github.medyo:android-about-page:2.0.0'
     implementation 'de.psdev.licensesdialog:licensesdialog:2.1.0'
     implementation 'com.belerweb:pinyin4j:2.5.0'
-    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'com.google.code.gson:gson:2.10.1'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
