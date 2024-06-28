@@ -45,4 +45,10 @@
         <item name="android:scrollbarThumbVertical">@color/system_accent</item>
     </style>
 
+    <style name="Material3Button" parent="Widget.Material3.Button.ElevatedButton.Icon">
+        <item name="iconSize">18dp</item>
+        <item name="backgroundTint">@color/system_accent_soft</item>
+        <item name="elevation">10dp</item>
+    </style>
+
 </resources>
