@@ -7,8 +7,6 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.tencent.bugly.crashreport.CrashReport;
-
 import org.exthmui.microlauncher.duoqin.R;
 import org.exthmui.microlauncher.duoqin.databinding.ActivityPrivacyPolicyBinding;
 import org.exthmui.microlauncher.duoqin.utils.BuglyUtils;

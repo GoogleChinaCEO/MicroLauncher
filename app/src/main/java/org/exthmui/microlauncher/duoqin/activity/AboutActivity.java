@@ -28,7 +28,6 @@ public class AboutActivity extends AppCompatActivity {
     private static final int DELAY_TIMER_MILLIS = 500;
     private static final int ACTIVITY_TRIGGER_COUNT = 3;
     private final long[] mHits = new long[ACTIVITY_TRIGGER_COUNT];
-    private boolean lock_enable = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

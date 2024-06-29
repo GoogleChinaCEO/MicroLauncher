@@ -60,7 +60,7 @@ public class AppList3rdActivity extends AppCompatActivity
     private String app_list_style;
     private String pwdCustom;
     private String iconPackPkg;
-    private boolean isSimpleList,isEnablePwd,pwdUseKeyguard;
+    private boolean isEnablePwd,pwdUseKeyguard;
     private List<String> excludePackagesList;
     private boolean isSortByPinyin = false;
     private boolean isTTSEnable;
@@ -139,7 +139,6 @@ public class AppList3rdActivity extends AppCompatActivity
 
     private void loadSettings(SharedPreferences sp){
         app_list_style=sp.getString("app_list_func","grid");
-        isSimpleList=sp.getBoolean("switch_preference_app_list_func",false);
         isEnablePwd=sp.getBoolean("enable_toolbox_password",false);
         pwdUseKeyguard=sp.getBoolean("toolbox_password_use_keyguard",true);
         pwdCustom=sp.getString("toolbox_password_use_custom","");

@@ -16,17 +16,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-
 import org.exthmui.microlauncher.duoqin.R;
-import org.exthmui.microlauncher.duoqin.adapter.AppAdapter;
 import org.exthmui.microlauncher.duoqin.adapter.HideAppAdapter;
 import org.exthmui.microlauncher.duoqin.databinding.AppHideListViewBinding;
 import org.exthmui.microlauncher.duoqin.utils.Application;

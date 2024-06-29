@@ -29,7 +29,6 @@ import es.dmoral.toasty.Toasty;
 public class HideAppAdapter extends AppAdapter {
 
     private List<Application> mApplicationList;
-    private final int mLayoutMode;
     private static View mItemView;
 
     /**
@@ -39,7 +38,6 @@ public class HideAppAdapter extends AppAdapter {
     public HideAppAdapter(List<Application> applicationList, int layoutMode, boolean zoomItem) {
         super(applicationList, layoutMode, zoomItem);
         mApplicationList = applicationList;
-        mLayoutMode = layoutMode;
         setHasStableIds(true);
     }
 
@@ -86,11 +84,17 @@ public class HideAppAdapter extends AppAdapter {
                     break;
                 case 1:
                     if(application.isSystemApp()){
-                        Snackbar.make(itemView,R.string.this_is_system_app,Snackbar.LENGTH_SHORT).show();
+                        Snackbar.make(itemView,
+                                R.string.this_is_system_app,
+                                Snackbar.LENGTH_SHORT
+                        ).show();
                     }else{
-                        Uri uri = Uri.fromParts("package", application.getPkgName(), null);
+                        Uri uri = Uri.fromParts("package",
+                                application.getPkgName(), null);
                         if (application.isAppSelf()){
-                            Toasty.error(mItemView.getContext(),R.string.abort_msg_uninstall_self, Toasty.LENGTH_LONG ).show();
+                            Toasty.error(mItemView.getContext(),
+                                    R.string.abort_msg_uninstall_self, Toasty.LENGTH_LONG
+                            ).show();
                         }else{
                             intent = new Intent(Intent.ACTION_DELETE, uri);
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -100,19 +104,26 @@ public class HideAppAdapter extends AppAdapter {
                     break;
                 case 2:
                     intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    intent.setData(Uri.fromParts("package", application.getPkgName(), null));
+                    intent.setData(Uri.fromParts("package",
+                            application.getPkgName(), null));
                     mItemView.getContext().startActivity(intent);
                     break;
                 case 3:
                     List<ShortcutInfo> list = getAppsShortcutsList(application.getPkgName());
                     if (LauncherUtils.isDefaultLauncher(mItemView.getContext())) {
-                        if (list.size() != 0 && list != null) {
+                        if (list != null && !list.isEmpty()) {
                             showShortcutsDialog(list);
                         } else {
-                            Toasty.error(mItemView.getContext(), R.string.no_shortcuts_toast, Toasty.LENGTH_SHORT).show();
+                            Toasty.error(mItemView.getContext(),
+                                    R.string.no_shortcuts_toast,
+                                    Toasty.LENGTH_SHORT
+                            ).show();
                         }
                     } else {
-                        Toasty.error(mItemView.getContext(), R.string.not_default_launcher_shortcut_msg, Toasty.LENGTH_SHORT).show();
+                        Toasty.error(mItemView.getContext(),
+                                R.string.not_default_launcher_shortcut_msg,
+                                Toasty.LENGTH_SHORT
+                        ).show();
                     }
                     break;
                 case 4:

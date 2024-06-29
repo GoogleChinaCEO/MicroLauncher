@@ -1,7 +1,6 @@
 package org.exthmui.microlauncher.duoqin.activity;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,7 +12,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -56,9 +54,6 @@ public class MenuActivity extends AppCompatActivity{
         return super.onOptionsItemSelected(item);
     }
 
-
-
-
     //创建一个类继承BaseAdapter
     class MyBaseAdapter extends BaseAdapter {
         //得到item的总数
@@ -89,9 +84,9 @@ public class MenuActivity extends AppCompatActivity{
                 convertView  = View.inflate(MenuActivity.this, R.layout.list_item, null);
                 //找到list_item.xml中创建的TextView
                 holder = new ViewHolder();
-                holder.title = (TextView) convertView.findViewById(R.id.menu_title);
-                holder.summary = (TextView) convertView.findViewById(R.id.menu_summary);
-                holder.icon = (ImageView) convertView.findViewById(R.id.menu_icon);
+                holder.title = convertView.findViewById(R.id.menu_title);
+                holder.summary = convertView.findViewById(R.id.menu_summary);
+                holder.icon = convertView.findViewById(R.id.menu_icon);
                 convertView.setTag(holder);
             }else{
                 holder = (ViewHolder) convertView.getTag();

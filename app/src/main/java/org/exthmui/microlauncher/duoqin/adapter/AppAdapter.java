@@ -52,7 +52,6 @@ public class AppAdapter extends
     private static int mPosition = -1;
 
     private boolean zoomItem;
-    private OnItemCallback onItemCallBack;
     public OnItemSelectCallback onItemSelectCallback;
 
     /**
@@ -86,7 +85,6 @@ public class AppAdapter extends
         Application application = this.mApplicationList.get(position);
         holder.mAppIconView.setImageDrawable(application.getAppIcon());
         holder.mText.setText(application.getAppLabel());
-        holder.mAppItem.setOnClickListener(new AppClick(position));
         holder.mAppItem.setOnFocusChangeListener(new FocusChange(position,holder));
 
 //      设置单击监听事件
@@ -129,32 +127,8 @@ public class AppAdapter extends
         super.setHasStableIds(hasStableIds);
     }
 
-    /**
-     * 提供给Activity刷新数据
-     * @param list
-     */
-    public void updateList(List<Application> list){
-        this.mApplicationList = list;
-        notifyDataSetChanged();
-    }
-
     public Application getItem(int position) {
         return mApplicationList.get(position);
-    }
-
-    public int getSectionForPosition(int position) {
-        return mApplicationList.get(position).getLetters().charAt(0);
-    }
-
-    public int getPositionForSection(int section) {
-        for (int i = 0; i < getItemCount(); i++) {
-            String sortStr = mApplicationList.get(i).getLetters();
-            char firstChar = sortStr.toUpperCase().charAt(0);
-            if (firstChar == section) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     @Override
@@ -289,7 +263,6 @@ public class AppAdapter extends
 
     private class FocusChange implements View.OnFocusChangeListener {
         int position;
-        private ObjectAnimator mCurrentAnimation;
         ApplicationViewHolder holder;
 
         public FocusChange(int position, ApplicationViewHolder holder){
@@ -306,32 +279,10 @@ public class AppAdapter extends
                 if (zoomItem) holder.mAppItem.animate().scaleX(1f).scaleY(1f).start();
                 holder.mAppItem.setBackgroundResource(R.color.no_color);
             }
-            if (onItemCallBack != null){
-                onItemCallBack.onFocusChange(v,hasFocus,position);
-            }
             if (onItemSelectCallback != null && hasFocus){
                 onItemSelectCallback.onItemSelect(v,position);
             }
         }
-    }
-
-    private class AppClick implements View.OnClickListener {
-        int position;
-
-        public AppClick(int position){
-            this.position = position;
-        }
-
-        @Override
-        public void onClick(View v) {
-            if (onItemCallBack != null){
-                onItemCallBack.onItemClick(v,position);
-            }
-        }
-    }
-
-    public void setOnItemClickCallback(OnItemCallback onItemCallback){
-        this.onItemCallBack = onItemCallback;
     }
 
     public void setOnItemSelectCallback(OnItemSelectCallback onItemSelectCallback){
