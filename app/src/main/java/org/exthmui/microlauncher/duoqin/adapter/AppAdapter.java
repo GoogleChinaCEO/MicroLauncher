@@ -25,6 +25,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -42,9 +43,11 @@ import java.util.Objects;
 
 import es.dmoral.toasty.Toasty;
 
-public class AppAdapter extends RecyclerView.Adapter<AppAdapter.ApplicationViewHolder> {
+public class AppAdapter extends
+        RecyclerView.Adapter<AppAdapter.ApplicationViewHolder> implements ShortcutCallback {
     private List<Application> mApplicationList;
     private static View mItemView;
+    private static AlertDialog dialog;
     private final int mLayoutMode;
     private static int mPosition = -1;
 
@@ -61,6 +64,7 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.ApplicationViewH
         this.mLayoutMode = layoutMode;
         this.zoomItem = zoomItem;
         setHasStableIds(true);
+        ShortcutsListAdapter.setShortcutCallback(this);
     }
 
     @NonNull
@@ -151,6 +155,13 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.ApplicationViewH
             }
         }
         return -1;
+    }
+
+    @Override
+    public void dismissDialog() {
+        if (dialog != null) {
+            dialog.dismiss();
+        }
     }
 
     public static class ApplicationViewHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {
@@ -249,10 +260,11 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.ApplicationViewH
         RecyclerView recyclerView = new RecyclerView(mItemView.getContext());
         recyclerView.setLayoutManager(new LinearLayoutManager(mItemView.getContext()));
         recyclerView.setAdapter(new ShortcutsListAdapter(list));
-        new MaterialAlertDialogBuilder(mItemView.getContext())
+        dialog = new MaterialAlertDialogBuilder(mItemView.getContext())
                 .setTitle(R.string.shortcuts_title)
                 .setView(recyclerView)
-                .show();
+                .create();
+        dialog.show();
     }
 
     /**

@@ -21,14 +21,20 @@ import org.exthmui.microlauncher.duoqin.R;
 
 import java.util.List;
 
-public class ShortcutsListAdapter extends RecyclerView.Adapter<ShortcutsListAdapter.ViewHolder>{
+public class ShortcutsListAdapter extends
+        RecyclerView.Adapter<ShortcutsListAdapter.ViewHolder> {
 
     private static final String TAG = "ShortcutsListAdapter";
     private final List<ShortcutInfo> mShortcutInfoList;
+    private static ShortcutCallback shortcutCallback;
     private LauncherApps mLauncherApps;
 
     public ShortcutsListAdapter(List<ShortcutInfo> mShortcutInfoList) {
         this.mShortcutInfoList = mShortcutInfoList;
+    }
+
+    public static void setShortcutCallback(ShortcutCallback callback) {
+        shortcutCallback = callback;
     }
 
     @NonNull
@@ -40,16 +46,20 @@ public class ShortcutsListAdapter extends RecyclerView.Adapter<ShortcutsListAdap
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ShortcutInfo info = this.mShortcutInfoList.get(position);
-        mLauncherApps = (LauncherApps) holder.itemView.getContext().getSystemService(Context.LAUNCHER_APPS_SERVICE);
+        mLauncherApps = (LauncherApps) holder.itemView.getContext()
+                .getSystemService(Context.LAUNCHER_APPS_SERVICE);
         if (TextUtils.isEmpty(info.getLongLabel())){
             holder.mLabel.setText(info.getShortLabel());
         } else {
             holder.mLabel.setText(info.getLongLabel());
         }
-        holder.mIcon.setImageDrawable(getIcon(holder.mIcon.getContext(),info, DisplayMetrics.DENSITY_DEVICE_STABLE));
+        holder.mIcon.setImageDrawable(
+                getIcon(holder.mIcon.getContext(),info, DisplayMetrics.DENSITY_DEVICE_STABLE));
         holder.itemView.setOnClickListener(v -> {
             try {
-                mLauncherApps.startShortcut(info.getPackage(),info.getId(),null,null, Process.myUserHandle());
+                mLauncherApps.startShortcut(info.getPackage(),info.getId(),
+                        null,null, Process.myUserHandle());
+                shortcutCallback.dismissDialog();
             } catch (Exception e) {
                 Log.e(TAG, "Failed to start shortcut", e);
             }
