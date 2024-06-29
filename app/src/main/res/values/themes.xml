@@ -14,6 +14,11 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="Theme.MicroLauncher.NoActionBar" parent="Theme.MicroLauncher">
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+    </style>
+
     <style name="TranslucentActivity" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@color/transpart</item>
