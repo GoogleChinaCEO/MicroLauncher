@@ -28,14 +28,19 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.blankj.utilcode.util.LogUtils;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.exthmui.microlauncher.duoqin.BuildConfig;
 import org.exthmui.microlauncher.duoqin.R;
 import org.exthmui.microlauncher.duoqin.databinding.ActivityMainBinding;
+import org.exthmui.microlauncher.duoqin.model.LauncherViewModel;
 import org.exthmui.microlauncher.duoqin.utils.BuglyUtils;
+import org.exthmui.microlauncher.duoqin.utils.Constants;
+import org.exthmui.microlauncher.duoqin.utils.LauncherSettingsUtils;
 import org.exthmui.microlauncher.duoqin.utils.LauncherUtils;
 import org.exthmui.microlauncher.duoqin.utils.TextSpeech;
+import org.exthmui.microlauncher.duoqin.utils.ViewModelUtils;
 import org.exthmui.microlauncher.duoqin.widgets.CallSmsCounter;
 import org.exthmui.microlauncher.duoqin.widgets.CarrierTextView;
 import org.exthmui.microlauncher.duoqin.widgets.ClockViewManager;
@@ -48,24 +53,20 @@ import es.dmoral.toasty.Toasty;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
-public class MainActivity extends AppCompatActivity
-        implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class MainActivity extends AppCompatActivity {
     private final static String TAG = "ML_MainActivity";
     private static final int grant_int=1;
-    private boolean carrier_enable;
+    private LauncherViewModel launcherViewModel;
+    private LauncherSettingsUtils launcherSettingsUtils;
     private boolean xiaoai_enable;
     private boolean dialpad_enable;
-    private boolean callsms_counter;
     private boolean lunar_isEnable;
-    private boolean bugly_init;
     private boolean disagree_privacy;
     private boolean torch = false;
     private boolean isShortPress;
     private boolean isTTSEnable;
     private boolean isLoadApp = false;
-    private boolean isDarkMode;
     private String clock_locate;
-    private SharedPreferences sharedPreferences;
     private CameraManager manager;
     private ContentObserver mMissedPhoneContentObserver;
     private ContentObserver mMissedMsgContentObserver;
@@ -83,10 +84,15 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         mainBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mainBinding.getRoot());
+
+        //全局日志设置
+        LogUtils.Config config = LogUtils.getConfig();
+        config.setLogSwitch(BuildConfig.DEBUG);
+        config.setGlobalTag(TAG);
+
         if (BuildConfig.DEBUG) { showFirstLogcat(); }
         checkDevice();
         GrantPermissions();
-        sharedPreferences = getSharedPreferences(launcherSettingsPref,Context.MODE_PRIVATE);
         clockViewManager = new ClockViewManager(mainBinding.clock.datesLayout);
         mainBinding.contact.setOnClickListener(new mClick());
         mainBinding.menu.setOnClickListener(new mClick());
@@ -95,7 +101,8 @@ public class MainActivity extends AppCompatActivity
         carrier = new CarrierTextView(this);
         clockViewManager.insertOrUpdateView(1, date);
         TextSpeech.getInstance(this);
-        loadSettings(sharedPreferences);
+        loadSettings();
+        loadViewModelObserve();
         mainBinding.clock.textClock.setOnClickListener(v -> {
             if (isTTSEnable) {
                 String readText = date.getText().toString() + ","
@@ -180,49 +187,45 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void loadSettings(SharedPreferences sharedPreferences){
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-        lunar_isEnable= (sharedPreferences.getBoolean("switch_preference_lunar",true));
-        if(lunar_isEnable){
-            Log.d(TAG, "Enable lunar");
-            clockViewManager.insertOrUpdateView(2, lunarDate);
-        }else{
-            Log.d(TAG, "Disable lunar");
-            clockViewManager.removeView(2);
-        }
-        carrier_enable = sharedPreferences.getBoolean("switch_preference_carrier_name",true);
-        if(carrier_enable){
-            Log.d(TAG, "Enable carrier name");
-            clockViewManager.insertOrUpdateView(3,carrier);
-        }else{
-            Log.d(TAG, "Disable carrier name");
-            clockViewManager.removeView(3);
-        }
-        callsms_counter = sharedPreferences.getBoolean("switch_preference_callsms_counter",false);
-        if (callsms_counter && EasyPermissions.hasPermissions(this, Manifest.permission.READ_CALL_LOG,Manifest.permission.READ_SMS)){
-            initCallSmsObserver();
-            if (callSmsCounter == null) {
-                callSmsCounter = new CallSmsCounter(this);
-            }
-            Log.d(TAG, "Enable call/sms counter");
-            clockViewManager.insertOrUpdateView(4, callSmsCounter);
-        }else{
-            Log.d(TAG, "Disable call/sms counter");
-            clockViewManager.removeView(4);
-        }
-        clock_locate = (sharedPreferences.getString("list_preference_clock_locate","left"));
-        setClockLocate(clock_locate);
-        pound_func = (sharedPreferences.getString("preference_pound_func","volume"));
-        String clock_size = (sharedPreferences.getString("list_preference_clock_size","44"));
-        mainBinding.clock.textClock.setTextSize(Float.parseFloat(clock_size));
-        xiaoai_enable = sharedPreferences.getBoolean("preference_main_xiaoai_ai",true);
-        dialpad_enable = sharedPreferences.getBoolean("preference_dial_pad",true);
-        bugly_init = sharedPreferences.getBoolean("bugly_init",false);
-        disagree_privacy = sharedPreferences.getBoolean("disagree",false);
-        isTTSEnable = sharedPreferences.getBoolean("app_list_tts",false);
-        isDarkMode = sharedPreferences.getBoolean("dark_mode",false);
-        LauncherUtils.setDarkMode(getApplicationContext(), isDarkMode);
-        if(bugly_init){
+    private void loadSettings(){
+        // 获取全局ViewModel
+        launcherViewModel = ViewModelUtils.getViewModel(getApplication(), LauncherViewModel.class);
+        launcherSettingsUtils = LauncherSettingsUtils.getInstance(this);
+
+        // 启用农历
+        launcherViewModel.getEnableLunar()
+                .postValue(launcherSettingsUtils.getBoolean("switch_preference_lunar",true));
+        // 启用运营商名称
+        launcherViewModel.getEnableCarrier()
+                .postValue(launcherSettingsUtils.getBoolean("switch_preference_carrier_name",true));
+        // 启用未接电话和短信计数器
+        launcherViewModel.getEnableCounter()
+                .postValue(launcherSettingsUtils.getBoolean("switch_preference_callsms_counter",false));
+        // 时钟位置
+        launcherViewModel.getClockLocate()
+                .postValue(launcherSettingsUtils.getString("list_preference_clock_locate","left"));
+        // ＃键功能
+        launcherViewModel.getPoundFuncName()
+                .postValue(launcherSettingsUtils.getString("preference_pound_func","volume"));
+        // 时钟字体大小
+        launcherViewModel.getClockTextSize()
+                .postValue(launcherSettingsUtils.getString("list_preference_clock_size","44"));
+        // 小爱键功能
+        launcherViewModel.getEnableXiaoAi()
+                .postValue(launcherSettingsUtils.getBoolean("preference_main_xiaoai_ai",true));
+        // 拨号盘设置
+        launcherViewModel.getEnableDialPad()
+                .postValue(launcherSettingsUtils.getBoolean("preference_dial_pad",true));
+        // 不同意隐私协议
+        disagree_privacy = launcherSettingsUtils.getBoolean("disagree",false);
+        // TTS设置
+        launcherViewModel.getEnableTTS()
+                .postValue(launcherSettingsUtils.getBoolean("app_list_tts",false));
+        // 深色设置
+        launcherViewModel.getEnableDarkMode()
+                .postValue(launcherSettingsUtils.getBoolean("dark_mode",false));
+
+        if (launcherSettingsUtils.getBoolean("bugly_init",false)) {
             BuglyUtils.initBugly(this);
         } else {
             if (!disagree_privacy) {
@@ -231,6 +234,71 @@ public class MainActivity extends AppCompatActivity
                 startActivity(intent);
             }
         }
+    }
+
+    private void loadViewModelObserve() {
+        if (launcherViewModel == null || launcherSettingsUtils == null) {
+            loadSettings();
+        }
+
+        launcherViewModel.getEnableLunar().observe(this, isEnable -> {
+            this.lunar_isEnable = isEnable;
+            if(isEnable){
+                LogUtils.d("Enable lunar");
+                clockViewManager.insertOrUpdateView(2, lunarDate);
+            }else{
+                LogUtils.d("Disable lunar");
+                clockViewManager.removeView(2);
+            }
+        });
+        launcherViewModel.getEnableCarrier().observe(this, isEnable -> {
+            if(isEnable){
+                LogUtils.d("Enable carrier name");
+                clockViewManager.insertOrUpdateView(3,carrier);
+            }else{
+                LogUtils.d("Disable carrier name");
+                clockViewManager.removeView(3);
+            }
+        });
+        launcherViewModel.getEnableCounter().observe(this, isEnable -> {
+            if (isEnable && EasyPermissions.hasPermissions(this,
+                    Manifest.permission.READ_CALL_LOG,
+                    Manifest.permission.READ_SMS)){
+                initCallSmsObserver();
+                if (callSmsCounter == null) {
+                    callSmsCounter = new CallSmsCounter(this);
+                }
+                LogUtils.d("Enable call/sms counter");
+                clockViewManager.insertOrUpdateView(4, callSmsCounter);
+            }else{
+                LogUtils.d("Disable call/sms counter");
+                clockViewManager.removeView(4);
+            }
+        });
+        launcherViewModel.getClockLocate().observe(this, locate -> {
+            this.clock_locate = locate;
+            setClockLocate(locate);
+        });
+
+        launcherViewModel.getPoundFuncName().observe(this, funcName -> {
+            this.pound_func = funcName;
+        });
+
+        launcherViewModel.getClockTextSize().observe(this, textSize -> {
+            mainBinding.clock.textClock.setTextSize(Float.parseFloat(textSize));
+        });
+        launcherViewModel.getEnableXiaoAi().observe(this, isEnable -> {
+            this.xiaoai_enable = isEnable;
+        });
+        launcherViewModel.getEnableDialPad().observe(this, isEnable -> {
+            this.dialpad_enable = isEnable;
+        });
+        launcherViewModel.getEnableTTS().observe(this, isEnable -> {
+            this.isTTSEnable = isEnable;
+        });
+        launcherViewModel.getEnableDarkMode().observe(this, isEnable -> {
+            LauncherUtils.setDarkMode(getApplicationContext(), isEnable);
+        });
     }
 
     private void setClockLocate(String clockLocate) {
@@ -246,21 +314,16 @@ public class MainActivity extends AppCompatActivity
         }
         mainBinding.clock.textClock.setLayoutParams(params);
         for (int i = 1; i < 5; i++) {
-            Log.d(TAG, "setClockLocate: "+i);
+            LogUtils.d("setClockLocate: "+i);
             clockViewManager.setLayoutParams(i, params);
         }
     }
 
     private void checkDevice(){
-        Log.d(TAG, "checkDevice: "+Build.BOARD);
+        LogUtils.d("checkDevice: "+Build.BOARD);
         if(!LauncherUtils.isQinDevice()){
             Toasty.info(this,R.string.not_qin_device,Toasty.LENGTH_SHORT).show();
         }
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        loadSettings(sharedPreferences);
     }
 
     class mClick implements View.OnClickListener{

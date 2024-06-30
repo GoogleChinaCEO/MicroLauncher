@@ -13,6 +13,7 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.blankj.utilcode.util.SPUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -31,7 +32,8 @@ import es.dmoral.toasty.Toasty;
 public class LauncherUtils {
 
     private static final String TAG = LauncherUtils.class.getSimpleName();
-    private static SharedPreferences mSharedPreferences;
+
+    private static SPUtils sp;
 
     /**
      * 判断是否为默认桌面
@@ -121,7 +123,9 @@ public class LauncherUtils {
                 .setTitle(R.string.menu_clear_all_hide)
                 .setMessage(R.string.clear_all_app_message)
                 .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                    if (cleanAllExcludeApp(context)) {
+                    cleanAllExcludeApp(context);
+                    sp = SPUtils.getInstance(appExcludePref, Context.MODE_PRIVATE);
+                    if (sp.contains("excludeList")) {
                         Toasty.success(context, R.string.unhide_success, Toasty.LENGTH_SHORT).show();
                         LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent(Constants.HIDE_APP_ACTION));
                     } else {
@@ -139,8 +143,8 @@ public class LauncherUtils {
      * @return 应用包名列表，若无该字段则返回null
      */
     public static List<String> getExcludePackagesName(Context context) {
-        mSharedPreferences = context.getSharedPreferences(appExcludePref, Context.MODE_PRIVATE);
-        String json = mSharedPreferences.getString("excludeList", null);
+        sp = SPUtils.getInstance(appExcludePref, Context.MODE_PRIVATE);
+        String json = sp.getString("excludeList", null);
         if (json != null) {
             //初始化Gson
             Gson gson = new GsonBuilder()
@@ -154,7 +158,8 @@ public class LauncherUtils {
             return bean.getExcludePackagesName();
         }
         //若无该字段则新建该字段并返回null
-        mSharedPreferences.edit().putString("excludeList", context.getString(R.string.hide_app_initial_json)).apply();
+        sp.clear();
+        sp.put("excludeList", context.getString(R.string.hide_app_initial_json));
         return null;
     }
 
@@ -162,12 +167,10 @@ public class LauncherUtils {
      * 清空应用排除列表
      * @param context
      */
-    public static boolean cleanAllExcludeApp(Context context) {
-        mSharedPreferences = context.getSharedPreferences(appExcludePref, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.clear();
-        editor.putString("excludeList", context.getString(R.string.hide_app_initial_json));
-        return editor.commit();
+    public static void cleanAllExcludeApp(Context context) {
+        sp = SPUtils.getInstance(appExcludePref, Context.MODE_PRIVATE);
+        sp.clear();
+        sp.put("excludeList", context.getString(R.string.hide_app_initial_json));
     }
 
     /**
@@ -177,7 +180,7 @@ public class LauncherUtils {
      * @return true为添加成功，false则添加失败
      */
     public static boolean addExcludeApp(Context context, String excludePackagesName) {
-        mSharedPreferences = context.getSharedPreferences(appExcludePref, Context.MODE_PRIVATE);
+        sp = SPUtils.getInstance(appExcludePref, Context.MODE_PRIVATE);
         List<String> appList = getExcludePackagesName(context);
         if (appList != null) {
             int totalCount = appList.size();
@@ -197,9 +200,7 @@ public class LauncherUtils {
             bean.setTotalCount(totalCount + 1);
             bean.setVersionCode(versionCode);
             String json = gson.toJson(bean);
-            SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putString("excludeList", json);
-            editor.apply();
+            sp.put("excludeList", json);
             return true;
         }
         return false;
@@ -212,7 +213,7 @@ public class LauncherUtils {
      * @return true为移除成功，false则移除失败
      */
     public static boolean removeExcludeApp(Context context, String excludePackagesName){
-        mSharedPreferences = context.getSharedPreferences(appExcludePref, Context.MODE_PRIVATE);
+        sp = SPUtils.getInstance(appExcludePref, Context.MODE_PRIVATE);
         List<String> appList = getExcludePackagesName(context);
         if (appList != null) {
             int totalCount = appList.size();
@@ -232,9 +233,7 @@ public class LauncherUtils {
             bean.setTotalCount(totalCount - 1);
             bean.setVersionCode(versionCode);
             String json = gson.toJson(bean);
-            SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putString("excludeList", json);
-            editor.apply();
+            sp.put("excludeList", json);
             return true;
         }
         return false;

@@ -31,46 +31,46 @@ public class LauncherSettingsUtils {
      * @param key
      * @param value
      */
-    public void putString(String key, String value) {
+    public boolean putString(String key, String value) {
         editor.putString(key, value);
-        editor.commit();
+        return editor.commit();
     }
 
-    public void putBoolean(String key, boolean value) {
+    public boolean putBoolean(String key, boolean value) {
         editor.putBoolean(key, value);
-        editor.commit();
+        return editor.commit();
     }
 
-    public void putFloat(String key, float value) {
+    public boolean putFloat(String key, float value) {
         editor.putFloat(key, value);
-        editor.commit();
+        return editor.commit();
     }
 
-    public void putInt(String key, int value) {
+    public boolean putInt(String key, int value) {
         editor.putInt(key, value);
-        editor.commit();
+        return editor.commit();
     }
 
-    public void putLong(String key, long value) {
+    public boolean putLong(String key, long value) {
         editor.putLong(key, value);
-        editor.commit();
+        return editor.commit();
     }
 
     /**
      * 清空SP里所以数据
      */
-    public void clear() {
+    public boolean clear() {
         editor.clear();
-        editor.commit();
+        return editor.commit();
     }
 
     /**
      * 删除SP里指定key对应的数据项
      * @param key
      */
-    public void remove(String key) {
+    public boolean remove(String key) {
         editor.remove(key);
-        editor.commit();
+        return editor.commit();
     }
 
     /**

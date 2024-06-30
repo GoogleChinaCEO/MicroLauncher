@@ -10,28 +10,30 @@ import androidx.appcompat.app.AppCompatActivity;
 import org.exthmui.microlauncher.duoqin.R;
 import org.exthmui.microlauncher.duoqin.databinding.ActivityPrivacyPolicyBinding;
 import org.exthmui.microlauncher.duoqin.utils.BuglyUtils;
+import org.exthmui.microlauncher.duoqin.utils.Constants;
+import org.exthmui.microlauncher.duoqin.utils.LauncherSettingsUtils;
 
 import es.dmoral.toasty.Toasty;
 
 public class PrivacyLicenseActivity extends AppCompatActivity {
     private final String LICENSE_URL = "file:///android_asset/privacy.html";
     private ActivityPrivacyPolicyBinding binding;
-    private SharedPreferences sharedPreferences;
+    private LauncherSettingsUtils settingsUtils;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityPrivacyPolicyBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        sharedPreferences = getSharedPreferences(getPackageName()+"_preferences", Context.MODE_PRIVATE);
+        settingsUtils = LauncherSettingsUtils.getInstance(this);
         binding.webview.loadUrl(LICENSE_URL);
         binding.accept.setOnClickListener(v -> {
-            sharedPreferences.edit().putBoolean("bugly_init", true).apply();
+            settingsUtils.putBoolean("bugly_init", true);
             BuglyUtils.initBugly(this);
             finish();
         });
         binding.reject.setOnClickListener(v -> {
-            sharedPreferences.edit().putBoolean("disagree", true).apply();
+            settingsUtils.putBoolean("disagree", true);
             finish();
         });
     }
